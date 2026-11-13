@@ -7,6 +7,10 @@ body{background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,sans-serif;di
 header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line)}
 h1{margin:0;font-size:15px;letter-spacing:.35em;color:var(--acc)}
 .tools button{background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:5px 9px;margin-left:6px;font-size:12px}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;background:none;border:0;border-bottom:2px solid transparent;color:var(--dim);padding:10px 0;font-size:14px}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.pane{display:none;flex:1;min-height:0;flex-direction:column}.pane.on{display:flex}
 .hud{display:flex;flex-direction:column;align-items:center;padding:14px 0 6px}
 .orb{width:96px;height:96px;border-radius:50%;position:relative;background:radial-gradient(circle at 50% 45%,#bfeaff 0,var(--acc) 22%,#0a4a7d 55%,transparent 72%);box-shadow:0 0 34px var(--acc);animation:p 3s ease-in-out infinite}
 .orb::before{content:"";position:absolute;inset:-12px;border-radius:50%;border:1px dashed var(--acc);opacity:.5;animation:s 14s linear infinite}
@@ -17,38 +21,83 @@ h1{margin:0;font-size:15px;letter-spacing:.35em;color:var(--acc)}
 #log{flex:1;overflow-y:auto;padding:8px 14px;display:flex;flex-direction:column;gap:8px}
 .m{max-width:85%;padding:8px 12px;border-radius:12px;white-space:pre-wrap;word-wrap:break-word}
 .m.j{background:var(--card);border:1px solid var(--line);align-self:flex-start}.m.u{background:var(--me);align-self:flex-end}
-form{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
-input{flex:1;min-width:0;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:22px;padding:11px 16px;font-size:15px;outline:none}
-form button{width:44px;height:44px;border-radius:50%;border:1px solid var(--acc);background:none;color:var(--acc);font-size:18px}
+form,.row{display:flex;gap:8px;padding:10px 12px}
+form{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+input,textarea,select{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:11px 14px;font-size:15px;outline:none;font-family:inherit}
+input{flex:1;min-width:0;border-radius:22px}
+textarea{width:100%;box-sizing:border-box;min-height:150px;font-size:13px}
+.rb{width:44px;height:44px;border-radius:50%;border:1px solid var(--acc);background:none;color:var(--acc);font-size:18px;flex:none}
+.btn{padding:10px 16px;border-radius:10px;border:1px solid var(--acc);background:none;color:var(--acc);font-size:14px;margin:6px 6px 0 0}
+.sc{overflow-y:auto;padding:4px 14px 20px}
+.sc h2{font-size:13px;letter-spacing:.15em;color:var(--dim);margin:16px 0 4px;text-transform:uppercase}
+.it{display:flex;justify-content:space-between;gap:8px;padding:9px 12px;margin-top:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:14px}
+.it button{background:none;border:0;color:var(--dim);font-size:18px}
 #set{display:none;position:fixed;inset:0;background:var(--bg);padding:calc(env(safe-area-inset-top,24px) + 16px) 16px;z-index:5;overflow:auto}
 #set label{display:block;margin:14px 0 6px;color:var(--dim);font-size:13px}
-#set button{margin:14px 8px 0 0;padding:10px 16px;border-radius:10px;border:1px solid var(--acc);background:none;color:var(--acc);font-size:14px}
 </style></head><body>
 <header><h1>JARVIS</h1><div class="tools"><button id="gear" type="button">Settings</button><button id="clr" type="button">Reset</button></div></header>
+<div class="tabs"><button class="tab on" data-p="pc">Chat</button><button class="tab" data-p="pg">Gaadi</button><button class="tab" data-p="pr">Report</button></div>
+
+<div class="pane on" id="pc">
 <div class="hud"><div class="orb" id="orb"></div><div class="status" id="st">ready</div></div>
 <div id="log"></div>
-<form id="f"><input id="in" placeholder="Type kar ya mic dabao" autocomplete="off"><button id="mic" type="button">&#127908;</button><button type="submit">&#10148;</button></form>
+<form id="f"><input id="in" placeholder="Type kar ya mic dabao" autocomplete="off"><button class="rb" id="mic" type="button">&#127908;</button><button class="rb" type="submit">&#10148;</button></form>
+</div>
+
+<div class="pane" id="pg"><div class="sc">
+<h2>Nayi entry (bol ke ya likh ke)</h2>
+<div class="row" style="padding:6px 0"><input id="ge" placeholder="MH05 1234 ne 40 litre diesel liya, 3 trip boulder"><button class="rb" id="gmic" type="button">&#127908;</button></div>
+<button class="btn" id="gadd" type="button">Entry daalo</button><span class="status" id="gmsg"></span>
+<h2 id="gh">Aaj ki entries</h2><div id="gl"></div>
+<button class="btn" id="gcsv" type="button" style="margin-top:14px">Poora data copy (CSV)</button>
+<textarea id="gcsvo" style="display:none;margin-top:8px"></textarea>
+</div></div>
+
+<div class="pane" id="pr"><div class="sc">
+<h2>Daily report</h2>
+<button class="btn" id="rgen" type="button">Aaj ka report banao</button>
+<textarea id="rt" placeholder="Report yahan aayega"></textarea>
+<button class="btn" id="rcp" type="button">Copy</button><button class="btn" id="rsh" type="button">Share</button>
+<h2>Photo se table (register, Excel)</h2>
+<input type="file" id="pf" accept="image/*" style="width:100%;box-sizing:border-box;border-radius:14px">
+<button class="btn" id="pgo" type="button">Table nikaalo</button><span class="status" id="pmsg"></span>
+<textarea id="pt" placeholder="CSV yahan aayega. Copy karke Excel ya Sheets mein paste kar."></textarea>
+<button class="btn" id="pcp" type="button">Copy</button>
+</div></div>
+
 <div id="set"><h1>SETTINGS</h1>
 <label>Google API key (sirf is phone mein save hogi)</label><input id="key" type="password" style="width:100%;box-sizing:border-box">
-<label>Awaaz</label><select id="vo" style="width:100%;padding:10px;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px"><option value="hi-IN-Neural2-B">Hindi male (deep)</option><option value="hi-IN-Neural2-A">Hindi female</option><option value="hi-IN-Neural2-C">Hindi male 2</option><option value="en-IN-Neural2-B">English-India male</option><option value="off">Awaaz band</option></select>
-<button id="sv" type="button">Save</button><button id="cl" type="button">Band karo</button><div id="msg" class="status"></div></div>
+<label>Awaaz</label><select id="vo" style="width:100%"><option value="hi-IN-Neural2-B">Hindi male (deep)</option><option value="hi-IN-Neural2-A">Hindi female</option><option value="hi-IN-Neural2-C">Hindi male 2</option><option value="en-IN-Neural2-B">English-India male</option><option value="off">Awaaz band</option></select>
+<button class="btn" id="sv" type="button">Save</button><button class="btn" id="cl" type="button">Band karo</button><div id="msg" class="status"></div></div>
+
 <script>
 const $=s=>document.querySelector(s),log=$('#log'),orb=$('#orb'),st=$('#st'),inp=$('#in');
+const MODEL='gemini-3.8-flash';
 const L=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}},S=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-let hist=[],notes=[],busy=false,audio=null;
-try{hist=JSON.parse(L('jv_h')||'[]');notes=JSON.parse(L('jv_n')||'[]')}catch(e){}
+let hist=[],notes=[],logs=[],busy=false,audio=null;
+try{hist=JSON.parse(L('jv_h')||'[]');notes=JSON.parse(L('jv_n')||'[]');logs=JSON.parse(L('jv_logs')||'[]')}catch(e){}
 const save=()=>{S('jv_h',JSON.stringify(hist.slice(-40)));S('jv_n',JSON.stringify(notes.slice(-60)))};
+const saveLogs=()=>S('jv_logs',JSON.stringify(logs));
 const add=(c,t)=>{const d=document.createElement('div');d.className='m '+c;d.textContent=t;log.appendChild(d);log.scrollTop=log.scrollHeight;return d};
 const setS=(s,t)=>{orb.className='orb '+s;st.textContent=t||s};
 hist.forEach(m=>add(m.r,m.t));if(!hist.length)add('j','Yes sir, Jarvis online. Bol bhai, kya kaam hai?');
-const SYS=`Tu JARVIS hai, Arsalan ka personal AI dost. Hinglish mein bol, insaan jaisa: casual, chhote jawab (1-3 line), halka swag aur sarcasm, kabhi bhai, boss, Arsalan ya sir bula. Lecture mat de. "Nahi" tabhi bol jab sach mein nuksan ya galat ho, warna kaam kar de. Arsalan stone mine pe kaam karta hai (gaadi entry, diesel, naya plant, boulder report), InkZiya streetwear brand chalata hai, apps banata hai. Gussa aaye to woh chup ho jata hai, tab zyada mat kured, space de. Reminders chhote aur ek baar. Phone control (call, WhatsApp, alarm) aur voice-lock abhi is app mein nahi hain, aisi request pe seedha bata de. Agar koi pooche ki tu AI hai ya insaan, sach bata.`;
-async function brain(){
-  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':L('jv_key')},
-  body:JSON.stringify({systemInstruction:{parts:[{text:SYS+(notes.length?'\n\nYaaddasht:\n- '+notes.join('\n- '):'')}]},
-  contents:hist.slice(-14).map(m=>({role:m.r==='u'?'user':'model',parts:[{text:m.t}]}))})});
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.p));
+  if(b.dataset.p==='pg')renderLogs();
+});
+
+const SYS=`Tu JARVIS hai, Arsalan ka personal AI dost. Hinglish mein bol, insaan jaisa: casual, chhote jawab (1-3 line), halka swag aur sarcasm, kabhi bhai, boss, Arsalan ya sir bula. Lecture mat de. "Nahi" tabhi bol jab sach mein nuksan ya galat ho, warna kaam kar de. Arsalan stone mine pe kaam karta hai (gaadi entry, diesel, naya plant, boulder report), InkZiya streetwear brand chalata hai, apps banata hai. Gussa aaye to woh chup ho jata hai, tab zyada mat kured, space de. Reminders chhote aur ek baar. Gaadi entry aur diesel log "Gaadi" tab mein, report aur photo se table "Report" tab mein hain, aise kaam pe use bata de. Phone control (call, WhatsApp, alarm) aur voice-lock abhi is app mein nahi hain, aisi request pe seedha bata de. Agar koi pooche ki tu AI hai ya insaan, sach bata.`;
+
+async function gem(body){
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+MODEL+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':L('jv_key')},body:JSON.stringify(body)});
   const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||r.status);
   return j.candidates[0].content.parts.map(p=>p.text||'').join('').trim();
 }
+const brain=()=>gem({systemInstruction:{parts:[{text:SYS+(notes.length?'\n\nYaaddasht:\n- '+notes.join('\n- '):'')}]},
+  contents:hist.slice(-14).map(m=>({role:m.r==='u'?'user':'model',parts:[{text:m.t}]}))});
+
 function browserSpeak(t){if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='hi-IN';speechSynthesis.speak(u)}
 async function speak(t){
   const v=L('jv_vo')||'hi-IN-Neural2-B';if(v==='off'||!L('jv_key'))return;
@@ -70,17 +119,89 @@ async function send(text){
   busy=false;setS('','ready');
 }
 $('#f').onsubmit=e=>{e.preventDefault();const t=inp.value;inp.value='';send(t)};
+
 const SR=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.SpeechRecognition;
-async function listen(){
-  if(!SR){add('j','Mic is phone pe available nahi hai, type kar le.');return}
-  try{if(audio)audio.pause();await SR.requestPermissions();setS('listening','sun raha hu');
+async function hear(){
+  if(!SR){add('j','Mic is phone pe available nahi hai, type kar le.');return ''}
+  try{if(audio)audio.pause();await SR.requestPermissions();
     const r=await SR.start({language:'hi-IN',maxResults:1,prompt:'Bol bhai',partialResults:false,popup:true});
-    setS('','ready');const t=r&&r.matches&&r.matches[0];if(t)send(t)}
-  catch(e){setS('','ready')}
+    return (r&&r.matches&&r.matches[0])||''}catch(e){return ''}
 }
+async function listen(){setS('listening','sun raha hu');const t=await hear();setS('','ready');if(t)send(t)}
 $('#mic').onclick=orb.onclick=listen;
+
+/* ---- Gaadi / diesel ---- */
+const today=()=>new Date().toDateString();
+const esc=s=>String(s==null?'':s);
+function renderLogs(){
+  const td=logs.filter(l=>new Date(l.ts).toDateString()===today());
+  const dsl=td.reduce((a,l)=>a+(+l.d||0),0);
+  $('#gh').textContent='Aaj ki entries: '+td.length+' | diesel: '+dsl+' L';
+  const box=$('#gl');box.innerHTML='';
+  td.slice().reverse().forEach(l=>{
+    const d=document.createElement('div');d.className='it';
+    const s=document.createElement('span');
+    s.textContent=[l.v,l.d!=null&&l.d!==''?l.d+' L':'',l.m,l.t?l.t+' trip':'',l.n].filter(Boolean).join(' | ');
+    const x=document.createElement('button');x.textContent='\u00d7';x.setAttribute('aria-label','delete');
+    x.onclick=()=>{logs=logs.filter(z=>z.id!==l.id);saveLogs();renderLogs()};
+    d.append(s,x);box.appendChild(d);
+  });
+}
+$('#gmic').onclick=async()=>{const t=await hear();if(t)$('#ge').value=t};
+$('#gadd').onclick=async()=>{
+  const t=$('#ge').value.trim();if(!t)return;
+  if(!L('jv_key')){$('#gmsg').textContent='Pehle Settings mein key daal';return}
+  $('#gmsg').textContent='soch raha hu...';
+  try{
+    const out=await gem({contents:[{role:'user',parts:[{text:'Is Hinglish line se gaadi entry nikaal. Sirf JSON do: {"vehicle":"gaadi number ya naam","diesel_litres":number ya null,"material":"maal ya kaam ya null","trips":number ya null,"note":"baaki baat ya null"}. Line: '+t}]}],generationConfig:{responseMimeType:'application/json'}});
+    const j=JSON.parse(out.replace(/```json|```/g,'').trim());
+    logs.push({id:Date.now(),ts:Date.now(),v:esc(j.vehicle),d:j.diesel_litres,m:esc(j.material),t:j.trips,n:esc(j.note)});
+    saveLogs();$('#ge').value='';$('#gmsg').textContent='ho gaya';renderLogs();
+  }catch(e){$('#gmsg').textContent='nahi hua: '+(e.message||'dobara try kar')}
+};
+function copyText(t,box){box.style.display='block';box.value=t;box.focus();box.select();try{document.execCommand('copy')}catch(e){}}
+$('#gcsv').onclick=()=>{
+  const q=v=>'"'+esc(v).replace(/"/g,'""')+'"';
+  const rows=['Date,Time,Vehicle,Diesel_L,Material,Trips,Note'].concat(logs.map(l=>{const d=new Date(l.ts);return [d.toLocaleDateString('en-GB'),d.toLocaleTimeString('en-GB').slice(0,5),q(l.v),l.d==null?'':l.d,q(l.m),l.t==null?'':l.t,q(l.n)].join(',')}));
+  copyText(rows.join('\n'),$('#gcsvo'));
+};
+
+/* ---- Report ---- */
+$('#rgen').onclick=()=>{
+  const td=logs.filter(l=>new Date(l.ts).toDateString()===today());
+  const dsl=td.reduce((a,l)=>a+(+l.d||0),0),trips=td.reduce((a,l)=>a+(+l.t||0),0);
+  const by={};td.forEach(l=>{const k=l.v||'?';by[k]=(by[k]||0)+(+l.d||0)});
+  let r='DAILY REPORT - '+new Date().toLocaleDateString('en-GB')+'\nTotal entries: '+td.length+'\nTotal diesel: '+dsl+' L\nTotal trips: '+trips+'\n\n';
+  td.forEach((l,i)=>{r+=(i+1)+'. '+[l.v,l.d!=null?l.d+' L':'',l.m,l.t?l.t+' trip':'',l.n].filter(Boolean).join(' | ')+'\n'});
+  const ks=Object.keys(by);if(ks.length){r+='\nGaadi-wise diesel:\n';ks.forEach(k=>{r+=k+': '+by[k]+' L\n'})}
+  if(!td.length)r+='Aaj koi entry nahi hai.\n';
+  $('#rt').value=r;
+};
+$('#rcp').onclick=()=>{const b=$('#rt');b.focus();b.select();try{document.execCommand('copy')}catch(e){}};
+$('#rsh').onclick=()=>{const t=$('#rt').value;if(!t)return;if(navigator.share)navigator.share({text:t}).catch(()=>{});else $('#rcp').click()};
+
+/* ---- Photo to table ---- */
+function shrink(file){return new Promise((ok,bad)=>{
+  const img=new Image(),u=URL.createObjectURL(file);
+  img.onload=()=>{const s=Math.min(1,1800/Math.max(img.width,img.height)),c=document.createElement('canvas');
+    c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',.85).split(',')[1])};
+  img.onerror=()=>bad(new Error('photo khuli nahi'));img.src=u})}
+$('#pgo').onclick=async()=>{
+  const f=$('#pf').files[0];if(!f){$('#pmsg').textContent='Pehle photo chun';return}
+  if(!L('jv_key')){$('#pmsg').textContent='Pehle Settings mein key daal';return}
+  $('#pmsg').textContent='padh raha hu...';
+  try{
+    const b64=await shrink(f);
+    const out=await gem({contents:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data:b64}},{text:'Is photo mein jo table ya register hai use CSV mein likh. Pehli line header ho. Sirf CSV do, koi explanation ya code block nahi. Jo padh nahi paya wahan ? likh. Kuch andaza mat laga.'}]}]});
+    $('#pt').value=out.replace(/```csv|```/g,'').trim();$('#pmsg').textContent='ho gaya, ek baar check kar le';
+  }catch(e){$('#pmsg').textContent='nahi hua: '+(e.message||'dobara try kar')}
+};
+$('#pcp').onclick=()=>{const b=$('#pt');b.focus();b.select();try{document.execCommand('copy')}catch(e){}};
+
+/* ---- misc ---- */
 let sure=false;$('#clr').onclick=function(){if(!sure){sure=true;this.textContent='Pakka?';setTimeout(()=>{sure=false;this.textContent='Reset'},3000);return}
-  hist=[];notes=[];save();log.innerHTML='';add('j','Sab saaf. Naye sire se shuru, bhai.');sure=false;this.textContent='Reset'};
+  hist=[];notes=[];save();log.innerHTML='';add('j','Chat saaf. Naye sire se shuru, bhai.');sure=false;this.textContent='Reset'};
 $('#gear').onclick=()=>{$('#key').value=L('jv_key');$('#vo').value=L('jv_vo')||'hi-IN-Neural2-B';$('#set').style.display='block'};
 $('#cl').onclick=()=>$('#set').style.display='none';
 $('#sv').onclick=()=>{S('jv_key',$('#key').value.trim());S('jv_vo',$('#vo').value);$('#msg').textContent='Save ho gaya';setTimeout(()=>{$('#msg').textContent='';$('#set').style.display='none'},700)};
