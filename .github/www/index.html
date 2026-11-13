@@ -43,7 +43,7 @@ const setS=(s,t)=>{orb.className='orb '+s;st.textContent=t||s};
 hist.forEach(m=>add(m.r,m.t));if(!hist.length)add('j','Yes sir, Jarvis online. Bol bhai, kya kaam hai?');
 const SYS=`Tu JARVIS hai, Arsalan ka personal AI dost. Hinglish mein bol, insaan jaisa: casual, chhote jawab (1-3 line), halka swag aur sarcasm, kabhi bhai, boss, Arsalan ya sir bula. Lecture mat de. "Nahi" tabhi bol jab sach mein nuksan ya galat ho, warna kaam kar de. Arsalan stone mine pe kaam karta hai (gaadi entry, diesel, naya plant, boulder report), InkZiya streetwear brand chalata hai, apps banata hai. Gussa aaye to woh chup ho jata hai, tab zyada mat kured, space de. Reminders chhote aur ek baar. Phone control (call, WhatsApp, alarm) aur voice-lock abhi is app mein nahi hain, aisi request pe seedha bata de. Agar koi pooche ki tu AI hai ya insaan, sach bata.`;
 async function brain(){
-  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':L('jv_key')},
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':L('jv_key')},
   body:JSON.stringify({systemInstruction:{parts:[{text:SYS+(notes.length?'\n\nYaaddasht:\n- '+notes.join('\n- '):'')}]},
   contents:hist.slice(-14).map(m=>({role:m.r==='u'?'user':'model',parts:[{text:m.t}]}))})});
   const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||r.status);
