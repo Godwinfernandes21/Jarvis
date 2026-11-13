@@ -1,0 +1,87 @@
+<!doctype html><html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>JARVIS</title>
+<style>
+:root{--bg:#050b14;--fg:#d6ecff;--dim:#6f8fae;--acc:#2bb3ff;--card:#0b1a2b;--line:#12385c;--me:#0e2b47;color-scheme:dark}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top,24px);box-sizing:border-box}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:15px;letter-spacing:.35em;color:var(--acc)}
+.tools button{background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:5px 9px;margin-left:6px;font-size:12px}
+.hud{display:flex;flex-direction:column;align-items:center;padding:14px 0 6px}
+.orb{width:96px;height:96px;border-radius:50%;position:relative;background:radial-gradient(circle at 50% 45%,#bfeaff 0,var(--acc) 22%,#0a4a7d 55%,transparent 72%);box-shadow:0 0 34px var(--acc);animation:p 3s ease-in-out infinite}
+.orb::before{content:"";position:absolute;inset:-12px;border-radius:50%;border:1px dashed var(--acc);opacity:.5;animation:s 14s linear infinite}
+.orb.listening{box-shadow:0 0 50px #5dff9e;filter:hue-rotate(-60deg)}
+.orb.thinking{filter:hue-rotate(40deg);animation-duration:1.2s}
+@keyframes p{50%{transform:scale(1.06)}}@keyframes s{to{transform:rotate(360deg)}}
+.status{margin-top:24px;font-size:11px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+#log{flex:1;overflow-y:auto;padding:8px 14px;display:flex;flex-direction:column;gap:8px}
+.m{max-width:85%;padding:8px 12px;border-radius:12px;white-space:pre-wrap;word-wrap:break-word}
+.m.j{background:var(--card);border:1px solid var(--line);align-self:flex-start}.m.u{background:var(--me);align-self:flex-end}
+form{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+input{flex:1;min-width:0;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:22px;padding:11px 16px;font-size:15px;outline:none}
+form button{width:44px;height:44px;border-radius:50%;border:1px solid var(--acc);background:none;color:var(--acc);font-size:18px}
+#set{display:none;position:fixed;inset:0;background:var(--bg);padding:calc(env(safe-area-inset-top,24px) + 16px) 16px;z-index:5;overflow:auto}
+#set label{display:block;margin:14px 0 6px;color:var(--dim);font-size:13px}
+#set button{margin:14px 8px 0 0;padding:10px 16px;border-radius:10px;border:1px solid var(--acc);background:none;color:var(--acc);font-size:14px}
+</style></head><body>
+<header><h1>JARVIS</h1><div class="tools"><button id="gear" type="button">Settings</button><button id="clr" type="button">Reset</button></div></header>
+<div class="hud"><div class="orb" id="orb"></div><div class="status" id="st">ready</div></div>
+<div id="log"></div>
+<form id="f"><input id="in" placeholder="Type kar ya mic dabao" autocomplete="off"><button id="mic" type="button">&#127908;</button><button type="submit">&#10148;</button></form>
+<div id="set"><h1>SETTINGS</h1>
+<label>Google API key (sirf is phone mein save hogi)</label><input id="key" type="password" style="width:100%;box-sizing:border-box">
+<label>Awaaz</label><select id="vo" style="width:100%;padding:10px;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px"><option value="hi-IN-Neural2-B">Hindi male (deep)</option><option value="hi-IN-Neural2-A">Hindi female</option><option value="hi-IN-Neural2-C">Hindi male 2</option><option value="en-IN-Neural2-B">English-India male</option><option value="off">Awaaz band</option></select>
+<button id="sv" type="button">Save</button><button id="cl" type="button">Band karo</button><div id="msg" class="status"></div></div>
+<script>
+const $=s=>document.querySelector(s),log=$('#log'),orb=$('#orb'),st=$('#st'),inp=$('#in');
+const L=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}},S=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let hist=[],notes=[],busy=false,audio=null;
+try{hist=JSON.parse(L('jv_h')||'[]');notes=JSON.parse(L('jv_n')||'[]')}catch(e){}
+const save=()=>{S('jv_h',JSON.stringify(hist.slice(-40)));S('jv_n',JSON.stringify(notes.slice(-60)))};
+const add=(c,t)=>{const d=document.createElement('div');d.className='m '+c;d.textContent=t;log.appendChild(d);log.scrollTop=log.scrollHeight;return d};
+const setS=(s,t)=>{orb.className='orb '+s;st.textContent=t||s};
+hist.forEach(m=>add(m.r,m.t));if(!hist.length)add('j','Yes sir, Jarvis online. Bol bhai, kya kaam hai?');
+const SYS=`Tu JARVIS hai, Arsalan ka personal AI dost. Hinglish mein bol, insaan jaisa: casual, chhote jawab (1-3 line), halka swag aur sarcasm, kabhi bhai, boss, Arsalan ya sir bula. Lecture mat de. "Nahi" tabhi bol jab sach mein nuksan ya galat ho, warna kaam kar de. Arsalan stone mine pe kaam karta hai (gaadi entry, diesel, naya plant, boulder report), InkZiya streetwear brand chalata hai, apps banata hai. Gussa aaye to woh chup ho jata hai, tab zyada mat kured, space de. Reminders chhote aur ek baar. Phone control (call, WhatsApp, alarm) aur voice-lock abhi is app mein nahi hain, aisi request pe seedha bata de. Agar koi pooche ki tu AI hai ya insaan, sach bata.`;
+async function brain(){
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':L('jv_key')},
+  body:JSON.stringify({systemInstruction:{parts:[{text:SYS+(notes.length?'\n\nYaaddasht:\n- '+notes.join('\n- '):'')}]},
+  contents:hist.slice(-14).map(m=>({role:m.r==='u'?'user':'model',parts:[{text:m.t}]}))})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||r.status);
+  return j.candidates[0].content.parts.map(p=>p.text||'').join('').trim();
+}
+function browserSpeak(t){if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='hi-IN';speechSynthesis.speak(u)}
+async function speak(t){
+  const v=L('jv_vo')||'hi-IN-Neural2-B';if(v==='off'||!L('jv_key'))return;
+  t=t.replace(/[*_#`]/g,'');
+  try{
+    const r=await fetch('https://texttospeech.googleapis.com/v1/text:synthesize',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':L('jv_key')},
+    body:JSON.stringify({input:{text:t},voice:{languageCode:v.slice(0,5),name:v},audioConfig:{audioEncoding:'MP3',speakingRate:.98}})});
+    const j=await r.json();if(!r.ok||!j.audioContent)throw 0;
+    if(audio)audio.pause();audio=new Audio('data:audio/mp3;base64,'+j.audioContent);await audio.play();
+  }catch(e){browserSpeak(t)}
+}
+async function send(text){
+  text=text.trim();if(!text||busy)return;
+  if(!L('jv_key')){add('j','Pehle Settings mein Google key daal de bhai.');return}
+  busy=true;add('u',text);hist.push({r:'u',t:text});if(/yaad rakh|remember/i.test(text))notes.push(text);save();setS('thinking','soch raha hu');
+  const b=add('j','...');
+  try{const a=await brain();b.textContent=a;hist.push({r:'j',t:a});save();speak(a)}
+  catch(e){hist.pop();b.textContent='Dimaag connect nahi hua: '+(e.message||e)+'\nKey ya internet check kar.'}
+  busy=false;setS('','ready');
+}
+$('#f').onsubmit=e=>{e.preventDefault();const t=inp.value;inp.value='';send(t)};
+const SR=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.SpeechRecognition;
+async function listen(){
+  if(!SR){add('j','Mic is phone pe available nahi hai, type kar le.');return}
+  try{if(audio)audio.pause();await SR.requestPermissions();setS('listening','sun raha hu');
+    const r=await SR.start({language:'hi-IN',maxResults:1,prompt:'Bol bhai',partialResults:false,popup:true});
+    setS('','ready');const t=r&&r.matches&&r.matches[0];if(t)send(t)}
+  catch(e){setS('','ready')}
+}
+$('#mic').onclick=orb.onclick=listen;
+let sure=false;$('#clr').onclick=function(){if(!sure){sure=true;this.textContent='Pakka?';setTimeout(()=>{sure=false;this.textContent='Reset'},3000);return}
+  hist=[];notes=[];save();log.innerHTML='';add('j','Sab saaf. Naye sire se shuru, bhai.');sure=false;this.textContent='Reset'};
+$('#gear').onclick=()=>{$('#key').value=L('jv_key');$('#vo').value=L('jv_vo')||'hi-IN-Neural2-B';$('#set').style.display='block'};
+$('#cl').onclick=()=>$('#set').style.display='none';
+$('#sv').onclick=()=>{S('jv_key',$('#key').value.trim());S('jv_vo',$('#vo').value);$('#msg').textContent='Save ho gaya';setTimeout(()=>{$('#msg').textContent='';$('#set').style.display='none'},700)};
+</script></body></html>
